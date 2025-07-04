@@ -19,7 +19,7 @@ function get_termsvg() {
   else
     # macOS lacks `readlink -f`, use portable method
     SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-    INSTALL_DIR="${SCRIPT_DIR}/bin"
+    INSTALL_DIR="${SCRIPT_DIR}/.dg/bin"
     echo "Running as non-root user. termsvg will be installed to ${INSTALL_DIR}"
     mkdir -p "${INSTALL_DIR}"
   fi

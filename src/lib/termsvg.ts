@@ -1,6 +1,7 @@
 import { execSync } from 'child_process';
 import { platform, arch } from 'os';
 import { existsSync } from 'fs';
+import { join } from 'path';
 import type { PlatformInfo } from '../types.js';
 
 export function getTermSVGInstallCommand(): string {
@@ -126,7 +127,7 @@ export async function checkTermSVGAvailability(): Promise<{
   } catch (error) {
     // System termsvg not available, try local binary
     try {
-      const localPath = './bin/termsvg';
+      const localPath = join(process.cwd(), '.dg', 'bin', 'termsvg');
       if (existsSync(localPath)) {
         const versionOutput = execSync(`${localPath} --help`, { 
           encoding: 'utf8',

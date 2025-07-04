@@ -72,30 +72,29 @@ export async function downloadAsciinema(): Promise<string | null> {
     return null;
   }
   
-  const filename = `asciinema-${version}-${asciinemaTarget}`;
-  const url = `https://github.com/asciinema/asciinema/releases/download/v${version}/${filename}.tar.gz`;
+  const filename = `asciinema-${asciinemaTarget}`;
+  const url = `https://github.com/asciinema/asciinema/releases/download/v${version}/${filename}`;
   
   try {
-    // Create bin directory in our config dir
-    const binDir = join(process.env.HOME || process.env.USERPROFILE || '', '.dg', 'bin');
+    // Check if this is a global installation
+    const isGlobalInstall = process.env.npm_config_global === 'true' || 
+                           process.env.npm_config_prefix || 
+                           process.argv.includes('--global');
+    
+    // Choose installation directory based on installation type
+    const binDir = isGlobalInstall ? '/usr/local/bin' : './.dg/bin';
+    
+    // Ensure directory exists
     await ensureDirectoryExists(binDir);
     
-    // Download and extract
-    const tarPath = join(binDir, 'asciinema.tar.gz');
-    await downloadFile(url, tarPath);
-    
-    // Extract binary
-    execSync(`tar xzf ${tarPath} -C ${binDir} --strip-components=1 ${filename}/asciinema`, {
-      stdio: 'pipe'
-    });
+    // Download binary
+    const binaryPath = join(binDir, 'asciinema');
+    await downloadFile(url, binaryPath);
     
     // Make executable
-    const binaryPath = join(binDir, 'asciinema');
     execSync(`chmod +x ${binaryPath}`, { stdio: 'pipe' });
     
-    // Clean up tar
-    execSync(`rm ${tarPath}`, { stdio: 'pipe' });
-    
+    logger.info(`Downloaded asciinema to: ${binaryPath}`);
     return binaryPath;
   } catch (error) {
     logger.error('Failed to download asciinema:', error);
@@ -109,7 +108,8 @@ export function getAsciinemaPath(): string {
     return 'asciinema'; // Use PATH only
   }
   
-  const binPath = join(process.env.HOME || process.env.USERPROFILE || '', '.dg', 'bin', 'asciinema');
+  // Choose path based on installation type
+  const binPath = join(process.cwd(), '.dg', 'bin', 'asciinema');
   
   if (existsSync(binPath)) {
     // Legal notice (shown once per session)
@@ -235,7 +235,7 @@ export async function recordInteractiveDemo(
     
     // Import node-pty
     const pty = await import('node-pty');
-    
+
     // Create a PTY instance with proper configuration
     const ptyProcess = pty.spawn(asciinemaPath, args, {
       name: 'xterm-256color',
@@ -449,7 +449,14 @@ export async function installAsciinemaInteractive(): Promise<boolean> {
       case 'linux':
         console.log('📦 Attempting to install via install script...');
         try {
-          execSync('curl -sL https://raw.githubusercontent.com/asciinema/asciinema/master/install | sh', { stdio: 'inherit' });
+          const isGlobalInstall = process.env.npm_config_global === 'true' || 
+                                 process.env.npm_config_prefix || 
+                                 process.argv.includes('--global');
+          
+          const installCommand = isGlobalInstall 
+            ? 'curl -sL https://raw.githubusercontent.com/DeepGuide-Ai/dg/master/scripts/install-asciinema.sh | sudo -E bash -'
+            : 'curl -sL https://raw.githubusercontent.com/DeepGuide-Ai/dg/master/scripts/install-asciinema.sh | bash -';
+          execSync(installCommand, { stdio: 'inherit' });
           console.log('✅ asciinema installed successfully!');
           return true;
         } catch (installError) {

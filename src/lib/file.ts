@@ -21,7 +21,15 @@ export async function downloadFile(url: string, targetPath: string): Promise<boo
     await ensureDirectoryExists(dirname(targetPath));
     
     // Download file
-    const response = await fetch(url);
+    const response = await fetch(url,{
+      redirect: 'follow',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36',
+        'Accept': 'application/octet-stream, application/zip, application/x-gzip, */*',
+        'Referer': 'https://github.com/'
+      }
+    });
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

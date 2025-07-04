@@ -224,18 +224,18 @@ async function autoFix(diagnostics: EnvironmentDiagnostics): Promise<void> {
       fixes.push('✅ asciinema installed via package manager');
     } else {
       // Fallback to bundled binary download
-      try {
-        const { downloadAsciinema } = await import('../lib/asciinema.js');
-        const binaryPath = await downloadAsciinema();
-        if (binaryPath) {
-          fixes.push('✅ asciinema downloaded successfully');
-        } else {
-          fixes.push('❌ asciinema installation failed - manual installation required');
-        }
-      } catch (error) {
-        console.log('❌ asciinema download failed:', (error as Error).message);
-        fixes.push('❌ asciinema installation failed - manual installation required');
-      }
+      // try {
+      //   const { downloadAsciinema } = await import('../lib/asciinema.js');
+      //   const binaryPath = await downloadAsciinema();
+      //   if (binaryPath) {
+      //     fixes.push('✅ asciinema downloaded successfully');
+      //   } else {
+      //     fixes.push('❌ asciinema installation failed - manual installation required');
+      //   }
+      // } catch (error) {
+      //   console.log('❌ asciinema download failed:', (error as Error).message);
+      //   fixes.push('❌ asciinema installation failed - manual installation required');
+      // }
     }
   }
 
