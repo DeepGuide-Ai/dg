@@ -127,6 +127,11 @@ export async function checkTermSVGAvailability(): Promise<{
 }
 
 export function getTermSVGPath(): string {
+  // Enterprise escape hatch
+  if (process.env.DG_GPL_OFF === '1') {
+    return 'termsvg'; // Use PATH only
+  }
+
   // Check local installation first
   const localPath = join(process.cwd(), '.dg', 'bin', 'termsvg');
   

@@ -88,11 +88,19 @@ async function checkTermSVG(): Promise<DiagnosticResult> {
       details: `SVG generation enabled - ${availability.path}`
     };
   } else {
-    return {
-      status: 'error',
-      message: 'termsvg not available',
-      details: availability.installCommand || 'Install from: https://github.com/MrMarble/termsvg'
-    };
+    if (process.env.DG_GPL_OFF === '1') {
+      return {
+        status: 'warning',
+        message: 'GPL mode disabled',
+        details: 'Install termsvg manually or remove DG_GPL_OFF=1'
+      };
+    } else {
+      return {
+        status: 'error',
+        message: 'termsvg not available',
+        details: availability.installCommand || 'Install from: https://github.com/MrMarble/termsvg'
+      };
+    }
   }
 }
 

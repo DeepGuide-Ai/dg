@@ -48,6 +48,46 @@ function tryRebuildNodePtyManually() {
   }
 }
 
+function checkTermSVG() {
+  try {
+    // Check if termsvg is available in PATH
+    execSync('termsvg --version', { stdio: 'pipe' });
+    console.log('✅ termsvg is already installed');
+    return true;
+  } catch (err) {
+    // Check local installation
+    const localPath = join(process.cwd(), '.dg', 'bin', 'termsvg');
+    if (existsSync(localPath)) {
+      try {
+        execSync(`"${localPath}" --version`, { stdio: 'pipe' });
+        console.log('✅ termsvg found in local installation');
+        return true;
+      } catch (localErr) {
+        // Local installation exists but not working
+        console.warn('⚠️ Local termsvg installation found but not working');
+      }
+    }
+    return false;
+  }
+}
+
+function installTermSVG() {
+  console.log('📦 Installing termsvg...');
+  try {
+    const installCommand = 'curl -sL https://raw.githubusercontent.com/DeepGuide-Ai/dg/master/scripts/install-termsvg.sh | bash -';
+    execSync(installCommand, { stdio: 'inherit' });
+    console.log('✅ termsvg installed successfully!');
+    return true;
+  } catch (installError) {
+    console.log('❌ Remote install script failed');
+    console.log('💡 Please install manually:');
+    console.log('   # Try Go installation:');
+    console.log('   go install github.com/mrmarble/termsvg/cmd/termsvg@latest');
+    console.log('   # Or download from: https://github.com/MrMarble/termsvg/releases');
+    return false;
+  }
+}
+
 async function install() {
   try {
     // check if node-pty is installed
@@ -57,9 +97,21 @@ async function install() {
       tryRebuildNodePtyManually();
     }
 
+    // Check and install termsvg
+    const termsvgOk = checkTermSVG();
+    if (!termsvgOk) {
+      if (process.env.DG_GPL_OFF === '1') {
+        console.log('⚠️ GPL mode disabled');
+        console.log('⚠️ termsvg not available');
+        console.log('⚠️ Install termsvg manually or remove DG_GPL_OFF=1');
+      } else {
+        installTermSVG();
+      }
+    }
+
     // Check if dist/index.js exists (built version)
     const distPath = join(process.cwd(), 'dist', 'index.js');
-    
+
     if (!existsSync(distPath)) {
       console.log('⚠️ Built files not found. This is normal during development.');
       console.log('Run `npm run build` to build the project.');
